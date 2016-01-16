@@ -39,7 +39,8 @@ $(function() {
 
   // add new joined user to user list
   function addNewJoinedUser (data){
-    var $usersDiv = $('<div class="usersItem"/>').text(data.username).css('color', '#000000');
+    var $usersDiv = $('<div class="usersItem" id=""/>').text(data.username).css('color', '#000000');
+    $usersDiv.attr('id',data.userId.substring(2,21));
     addUserElement($usersDiv);
   }
 
@@ -49,10 +50,17 @@ $(function() {
     if (data.numUsers == 1) {}
       else {
         for (var i = 0; i < data.numUsers; i++) {  
-          var $usersDiv = $('<div class="usersItem"/>').text(data.users[i]).css('color', '#000000');
+          var $usersDiv = $('<div class="usersItem" id=""/>').text(data.users[i].username).css('color', '#000000');
+          $usersDiv.attr('id',data.users[i].userId.substring(2,21));
           addUserElement($usersDiv);
         };
       }
+  }
+
+
+  //delete the user have log out
+  function deleteUserLogOut (data) {
+    $('.usersItem').remove('#'+data.userId.substring(2,21));
   }
 
 
@@ -307,13 +315,14 @@ $(function() {
     log(data.username + ' joined');
     addParticipantsMessage(data);
     addNewJoinedUser(data);
-
   });
 
   // Whenever the server emits 'user left', log it in the chat body
   socket.on('user left', function (data) {
     log(data.username + ' left');
     addParticipantsMessage(data);
+    // delete the user log out
+    deleteUserLogOut(data);
     removeChatTyping(data);
   });
 

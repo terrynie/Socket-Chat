@@ -33,23 +33,35 @@ io.on('connection', function (socket) {
   // when the client emits 'add user', this listens and executes
   socket.on('add user', function (username) {
     if (addedUser) return;
-
+    console.log(socket.id);
     // we store the username in the socket session for this client
     socket.username = username;
     ++numUsers;
     addedUser = true;
+    
     socket.emit('login', {
       numUsers: numUsers,
       //sent all users online to new user
       users: users
     });
+    //debug
+    console.log(users.length);
+
+    
     // echo globally (all clients) that a person has connected
     socket.broadcast.emit('user joined', {
+      userId: socket.id,
       username: socket.username,
     });
+    var user = {
+    	userId: socket.id,
+    	username: socket.username
+    }
     // record every users online
     // if push username first, your username will in yourself list
-    users.push(username);
+    users.push(user);
+    //debug
+    console.log(users.length);
   });
 
   // when the client emits 'typing', we broadcast it to others
@@ -68,15 +80,22 @@ io.on('connection', function (socket) {
 
   // when the user disconnects.. perform this
   socket.on('disconnect', function () {
-  	var pos = users.indexOf(socket.username);
     if (addedUser) {
       --numUsers;
-      users.splice(pos, 1);
       // echo globally that this client has left
       socket.broadcast.emit('user left', {
         username: socket.username,
-        index: pos,
+        userId: socket.id,
       });
+      //delete the user log out from users array
+      for (var i = 0; i < users.length; i++) {
+      	if (users[i].username==socket.username) {
+      		users.splice(i,1);
+      	};
+      };
+      
     }
+    //debug
+    console.log(users.length);
   });
 });
